@@ -1,12 +1,15 @@
 import { useState, type FormEvent } from "react";
 import { Lock } from "lucide-react";
 import { api } from "../lib/api";
+import { useI18n } from "../i18n";
+import { LanguageToggle } from "./LanguageToggle";
 
 interface LoginPageProps {
   onSuccess: () => void;
 }
 
 export function LoginPage({ onSuccess }: LoginPageProps) {
+  const { t } = useI18n();
   const [token, setToken] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -19,7 +22,7 @@ export function LoginPage({ onSuccess }: LoginPageProps) {
       await api.login(token);
       onSuccess();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      setError(err instanceof Error ? err.message : t("loginFailed"));
     } finally {
       setLoading(false);
     }
@@ -27,6 +30,9 @@ export function LoginPage({ onSuccess }: LoginPageProps) {
 
   return (
     <div className="h-screen flex items-center justify-center bg-surface-0">
+      <div className="absolute top-4 right-4">
+        <LanguageToggle />
+      </div>
       <div className="w-80">
         <div className="flex flex-col items-center mb-6">
           <div className="h-10 w-10 rounded-lg bg-accent/10 flex items-center justify-center mb-3">
@@ -35,13 +41,13 @@ export function LoginPage({ onSuccess }: LoginPageProps) {
           <h1 className="text-lg font-semibold text-gray-100">
             CloakBrowser Manager
           </h1>
-          <p className="text-xs text-gray-500 mt-1">Enter your access token</p>
+          <p className="text-xs text-gray-500 mt-1">{t("enterAccessToken")}</p>
         </div>
         <form onSubmit={handleSubmit}>
           <input
             type="password"
             className="input mb-3"
-            placeholder="Access token"
+            placeholder={t("accessToken")}
             value={token}
             onChange={(e) => setToken(e.target.value)}
             autoFocus
@@ -52,7 +58,7 @@ export function LoginPage({ onSuccess }: LoginPageProps) {
             disabled={loading || !token}
             className="btn-primary w-full disabled:opacity-50"
           >
-            {loading ? "Authenticating..." : "Unlock"}
+            {loading ? t("authenticating") : t("unlock")}
           </button>
         </form>
       </div>

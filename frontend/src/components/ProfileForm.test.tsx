@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Profile } from "../lib/api";
 import { ProfileForm } from "./ProfileForm";
+import { I18nProvider } from "../i18n";
 
 function profile(status: Profile["status"]): Profile {
   return {
@@ -40,14 +41,16 @@ function profile(status: Profile["status"]): Profile {
 function renderForm(status: Profile["status"]) {
   const onDuplicate = vi.fn().mockResolvedValue(undefined);
   render(
-    <ProfileForm
-      profile={profile(status)}
-      hostOs="linux"
-      viewerMode="vnc"
-      onSave={vi.fn()}
-      onDuplicate={onDuplicate}
-      onCancel={vi.fn()}
-    />,
+    <I18nProvider>
+      <ProfileForm
+        profile={profile(status)}
+        hostOs="linux"
+        viewerMode="vnc"
+        onSave={vi.fn()}
+        onDuplicate={onDuplicate}
+        onCancel={vi.fn()}
+      />
+    </I18nProvider>,
   );
   return onDuplicate;
 }

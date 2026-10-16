@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { api, type Profile, type ProfileCreateData } from "../lib/api";
+import { useI18n } from "../i18n";
 
 export function useProfiles() {
+  const { t } = useI18n();
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -12,11 +14,11 @@ export function useProfiles() {
       setProfiles(data);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch profiles");
+      setError(err instanceof Error ? err.message : t("failedToFetchProfiles"));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     refresh();
@@ -32,10 +34,10 @@ export function useProfiles() {
         setProfiles((prev) => [profile, ...prev]);
         return profile;
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to create profile");
+        setError(err instanceof Error ? err.message : t("failedToCreateProfile"));
       }
     },
-    [],
+    [t],
   );
 
   const update = useCallback(
@@ -45,10 +47,10 @@ export function useProfiles() {
         setProfiles((prev) => prev.map((p) => (p.id === id ? profile : p)));
         return profile;
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to update profile");
+        setError(err instanceof Error ? err.message : t("failedToUpdateProfile"));
       }
     },
-    [],
+    [t],
   );
 
   // Persist a manual order. Optimistic so the UI updates instantly; the 3s poll
@@ -64,11 +66,11 @@ export function useProfiles() {
       try {
         await api.reorderProfiles(orderedIds);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to reorder profiles");
+        setError(err instanceof Error ? err.message : t("failedToReorderProfiles"));
         await refresh();
       }
     },
-    [refresh],
+    [refresh, t],
   );
 
   const remove = useCallback(
@@ -77,10 +79,10 @@ export function useProfiles() {
         await api.deleteProfile(id);
         setProfiles((prev) => prev.filter((p) => p.id !== id));
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to delete profile");
+        setError(err instanceof Error ? err.message : t("failedToDeleteProfile"));
       }
     },
-    [],
+    [t],
   );
 
   const launch = useCallback(
@@ -101,10 +103,10 @@ export function useProfiles() {
         await api.stopProfile(id);
         await refresh();
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to stop profile");
+        setError(err instanceof Error ? err.message : t("failedToStopProfile"));
       }
     },
-    [refresh],
+    [refresh, t],
   );
 
   // Wipe browser state + re-roll fingerprint. Stays stopped — the profile keeps
@@ -116,10 +118,10 @@ export function useProfiles() {
         await api.resetProfile(id);
         await refresh();
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to reset profile");
+        setError(err instanceof Error ? err.message : t("failedToResetProfile"));
       }
     },
-    [refresh],
+    [refresh, t],
   );
 
   // Clone a profile into a new profile (same settings + fingerprint). With
@@ -133,10 +135,10 @@ export function useProfiles() {
         setProfiles((prev) => [profile, ...prev]);
         return profile;
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to duplicate profile");
+        setError(err instanceof Error ? err.message : t("failedToDuplicateProfile"));
       }
     },
-    [],
+    [t],
   );
 
   return { profiles, loading, error, refresh, create, update, remove, reorder, launch, stop, reset, duplicate };

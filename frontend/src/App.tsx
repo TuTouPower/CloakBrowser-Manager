@@ -13,11 +13,14 @@ import { UpdateBanner } from "./components/UpdateBanner";
 import { LaunchErrorBanner } from "./components/LaunchErrorBanner";
 import { SettingsPanel } from "./components/SettingsPanel";
 import { LoginPage } from "./components/LoginPage";
+import { LanguageToggle } from "./components/LanguageToggle";
+import { useI18n } from "./i18n";
 
 type AuthState = "checking" | "required" | "ok" | "error";
 type View = "empty" | "create" | "edit" | "view";
 
 export default function App() {
+  const { t } = useI18n();
   const [authState, setAuthState] = useState<AuthState>("checking");
   const [authRequired, setAuthRequired] = useState(false);
 
@@ -44,7 +47,7 @@ export default function App() {
   if (authState === "checking") {
     return (
       <div className="h-screen flex items-center justify-center">
-        <div className="text-gray-500 text-sm">Loading...</div>
+        <div className="text-gray-500 text-sm">{t("loading")}</div>
       </div>
     );
   }
@@ -53,7 +56,7 @@ export default function App() {
     return (
       <div className="h-screen flex items-center justify-center bg-surface-0">
         <div className="text-center">
-          <p className="text-red-400 text-sm mb-2">Unable to reach the server</p>
+          <p className="text-red-400 text-sm mb-2">{t("unableToReachServer")}</p>
           <button
             onClick={() => {
               setAuthState("checking");
@@ -66,7 +69,7 @@ export default function App() {
             }}
             className="text-xs text-gray-400 hover:text-gray-200 underline"
           >
-            Retry
+            {t("retry")}
           </button>
         </div>
       </div>
@@ -94,6 +97,7 @@ interface AppContentProps {
 }
 
 function AppContent({ authRequired, onLogout }: AppContentProps) {
+  const { t } = useI18n();
   const { profiles, loading, error, create, update, remove, reorder, launch, stop, reset, duplicate } = useProfiles();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [view, setView] = useState<View>("empty");
@@ -106,7 +110,7 @@ function AppContent({ authRequired, onLogout }: AppContentProps) {
   const [stopped, setStopped] = useState(false);
 
   const handleQuit = useCallback(async () => {
-    if (!window.confirm("Quit CloakBrowser Manager? This stops the server and closes all running profiles.")) {
+    if (!window.confirm(t("quitConfirm"))) {
       return;
     }
     setStopped(true);
@@ -115,7 +119,7 @@ function AppContent({ authRequired, onLogout }: AppContentProps) {
     } catch {
       // The server exits mid-request, so a network error here is expected.
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     api.getStatus().then(setSystemStatus).catch(() => setSystemStatus(null));
@@ -188,12 +192,12 @@ function AppContent({ authRequired, onLogout }: AppContentProps) {
         });
       } else {
         setLaunchError({
-          message: err instanceof Error ? err.message : "Failed to launch profile",
+          message: err instanceof Error ? err.message : t("failedToLaunchProfile"),
           reason: "license",
         });
       }
     }
-  }, [selectedId, launch]);
+  }, [selectedId, launch, t]);
 
   const handleStop = useCallback(async () => {
     if (!selectedId) return;
@@ -229,7 +233,7 @@ function AppContent({ authRequired, onLogout }: AppContentProps) {
   if (loading) {
     return (
       <div className="h-screen flex items-center justify-center">
-        <div className="text-gray-500 text-sm">Loading...</div>
+        <div className="text-gray-500 text-sm">{t("loading")}</div>
       </div>
     );
   }
@@ -238,9 +242,9 @@ function AppContent({ authRequired, onLogout }: AppContentProps) {
     return (
       <div className="h-screen flex flex-col items-center justify-center bg-surface-0 text-center px-6">
         <Power className="h-10 w-10 text-gray-600 mb-4" />
-        <h1 className="text-lg font-medium mb-1">CloakBrowser Manager has stopped</h1>
-        <p className="text-sm text-gray-500">The server is no longer running. You can close this tab.</p>
-        <p className="text-xs text-gray-600 mt-4">Relaunch the app to start it again.</p>
+        <h1 className="text-lg font-medium mb-1">{t("managerStopped")}</h1>
+        <p className="text-sm text-gray-500">{t("managerStoppedHint")}</p>
+        <p className="text-xs text-gray-600 mt-4">{t("managerStoppedRelaunch")}</p>
       </div>
     );
   }
@@ -281,7 +285,7 @@ function AppContent({ authRequired, onLogout }: AppContentProps) {
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="text-gray-500 hover:text-gray-300 p-1"
-              title={sidebarOpen ? "Hide sidebar" : "Show sidebar"}
+              title={sidebarOpen ? t("hideSidebar") : t("showSidebar")}
             >
               {sidebarOpen ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeft className="h-4 w-4" />}
             </button>
@@ -294,17 +298,18 @@ function AppContent({ authRequired, onLogout }: AppContentProps) {
           </div>
           <div className="flex items-center gap-3">
             <SystemStatusBadge status={systemStatus} />
+            <LanguageToggle />
             <button
               onClick={() => setSettingsOpen(true)}
               className="text-gray-500 hover:text-gray-300 p-1"
-              title="Settings"
+              title={t("settings")}
             >
               <Settings className="h-4 w-4" />
             </button>
             <button
               onClick={handleQuit}
               className="text-gray-500 hover:text-red-400 p-1"
-              title="Quit Manager (stops the server)"
+              title={t("quitManager")}
             >
               <Power className="h-4 w-4" />
             </button>
@@ -320,7 +325,7 @@ function AppContent({ authRequired, onLogout }: AppContentProps) {
               <button
                 onClick={onLogout}
                 className="text-gray-500 hover:text-gray-300 p-1"
-                title="Log out"
+                title={t("logOut")}
               >
                 <Lock className="h-3.5 w-3.5" />
               </button>
@@ -341,17 +346,16 @@ function AppContent({ authRequired, onLogout }: AppContentProps) {
             ((systemStatus?.license_tier ?? "keyless") === "keyless" ? (
               <div className="flex items-center justify-center h-full px-6">
                 <div className="max-w-sm text-center">
-                  <p className="text-sm font-medium text-gray-200">No license key set</p>
+                  <p className="text-sm font-medium text-gray-200">{t("noLicenseKeySet")}</p>
                   <p className="mt-1.5 text-sm text-gray-500">
-                    You're running the free keyless build. Add a key to run the
-                    latest Pro build.
+                    {t("noLicenseKeyBody")}
                   </p>
                   <div className="mt-5 flex flex-col items-center gap-2">
                     <button
                       onClick={() => setSettingsOpen(true)}
                       className="btn-primary w-56"
                     >
-                      Enter a key in Settings
+                      {t("enterKeyInSettings")}
                     </button>
                     <a
                       href="https://cloakbrowser.dev/free"
@@ -359,7 +363,7 @@ function AppContent({ authRequired, onLogout }: AppContentProps) {
                       rel="noreferrer"
                       className="btn-secondary w-56"
                     >
-                      Get a free key
+                      {t("getFreeKey")}
                     </a>
                     <a
                       href="https://cloakbrowser.dev/#pricing"
@@ -367,18 +371,18 @@ function AppContent({ authRequired, onLogout }: AppContentProps) {
                       rel="noreferrer"
                       className="text-xs text-gray-500 hover:text-gray-300"
                     >
-                      See Pro plans &rarr;
+                      {t("seeProPlans")}
                     </a>
                   </div>
                   <p className="mt-6 text-xs text-gray-600">
-                    Or select a profile or create a new one to continue keyless.
+                    {t("orContinueKeyless")}
                   </p>
                 </div>
               </div>
             ) : (
               <div className="flex items-center justify-center h-full">
                 <div className="text-center">
-                  <p className="text-gray-500 text-sm">Select a profile or create a new one</p>
+                  <p className="text-gray-500 text-sm">{t("selectOrCreateProfile")}</p>
                 </div>
               </div>
             ))}

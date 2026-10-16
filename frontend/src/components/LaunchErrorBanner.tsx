@@ -1,12 +1,7 @@
 import { AlertTriangle, X } from "lucide-react";
 import { api, type LaunchDenial } from "../lib/api";
+import { useI18n } from "../i18n";
 
-/**
- * Dismissible top bar shown when a launch is refused for a license reason
- * (out of seats, invalid/expired key). Mirrors UpdateBanner's styling; the
- * upgrade link opens in the host browser via openExternal (window.open is a
- * no-op in the native webview). Dismiss is in-memory only.
- */
 export function LaunchErrorBanner({
   error,
   onDismiss,
@@ -14,6 +9,7 @@ export function LaunchErrorBanner({
   error: LaunchDenial;
   onDismiss: () => void;
 }) {
+  const { t } = useI18n();
   const openUpgrade = () => {
     if (!error.upgrade_url) return;
     api.openExternal(error.upgrade_url).catch(() => {});
@@ -28,14 +24,14 @@ export function LaunchErrorBanner({
           onClick={openUpgrade}
           className="font-medium underline underline-offset-2 hover:text-red-200"
         >
-          Upgrade your plan
+          {t("upgradePlan")}
         </button>
       )}
       <button
         onClick={onDismiss}
         className="ml-1 p-0.5 text-red-400/70 hover:text-red-200"
-        title="Dismiss"
-        aria-label="Dismiss launch error"
+        title={t("dismiss")}
+        aria-label={t("dismissLaunchError")}
       >
         <X className="h-3.5 w-3.5" />
       </button>

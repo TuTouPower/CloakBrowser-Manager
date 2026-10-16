@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { Code2 } from "lucide-react";
+import { useI18n } from "../i18n";
 
 interface CdpEndpointButtonProps {
   cdpUrl: string | null;
 }
 
 export function CdpEndpointButton({ cdpUrl }: CdpEndpointButtonProps) {
+  const { t } = useI18n();
   const [copied, setCopied] = useState(false);
 
   if (!cdpUrl) return null;
@@ -22,7 +24,7 @@ export function CdpEndpointButton({ cdpUrl }: CdpEndpointButtonProps) {
     <button
       onClick={copyEndpoint}
       className={`p-1 ${copied ? "text-emerald-400" : "text-gray-500 hover:text-gray-300"}`}
-      title={copied ? "Copied!" : "Copy CDP endpoint URL"}
+      title={copied ? t("copied") : t("copyCdpUrl")}
     >
       <Code2 className="h-3.5 w-3.5" />
     </button>

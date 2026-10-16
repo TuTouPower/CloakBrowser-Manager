@@ -24,6 +24,11 @@ Start free with one concurrent browser, scale to more on a paid plan.
 
 ---
 
+> **Community fork (TuTouPower)** — UI language: English / 中文. Click **EN / 中文** in the top bar or Settings to switch. Preference is saved in `localStorage`. Default follows the browser language (`zh*` → 中文, otherwise English). Upstream: [CloakHQ/CloakBrowser-Manager](https://github.com/CloakHQ/CloakBrowser-Manager). This fork focuses on i18n only; auth, license, binary download, and CDP/VNC are unchanged.
+>
+> **社区分支（TuTouPower）** — 支持界面 **中英文切换**。点击顶栏或设置中的 **EN / 中文** 即可切换，选择会保存在 `localStorage`。默认跟随浏览器语言（`zh*` 为中文，否则英文）。上游仓库：[CloakHQ/CloakBrowser-Manager](https://github.com/CloakHQ/CloakBrowser-Manager)。本分支仅增加界面多语言，不改动鉴权、许可证、二进制下载与 CDP/VNC。
+
+
 <p align="center">
 <img src="https://raw.githubusercontent.com/CloakHQ/CloakBrowser-Manager/main/assets/manager-macos.png" width="800" alt="CloakBrowser Manager on macOS">
 </p>

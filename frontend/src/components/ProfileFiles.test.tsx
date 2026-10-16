@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import type { ProfileFile } from "../lib/api";
 import { ProfileFilesButton, formatSize } from "./ProfileFiles";
+import { I18nProvider } from "../i18n";
 
 const file = (over: Partial<ProfileFile> = {}): ProfileFile => ({
   id: "a1", profile_id: "p1", name: "weekly report.csv", size: 2048,
@@ -14,18 +15,20 @@ function renderButton(over: Partial<Parameters<typeof ProfileFilesButton>[0]> = 
   const onUpload = vi.fn().mockResolvedValue(undefined);
   const onRemove = vi.fn().mockResolvedValue(undefined);
   render(
-    <ProfileFilesButton
-      profileId="p1"
-      profileName="Work profile"
-      files={[file()]}
-      uploading={false}
-      error={null}
-      onUpload={onUpload}
-      onRemove={onRemove}
-      onRefresh={vi.fn().mockResolvedValue(undefined)}
-      onClearError={vi.fn()}
-      {...over}
-    />,
+    <I18nProvider>
+      <ProfileFilesButton
+        profileId="p1"
+        profileName="Work profile"
+        files={[file()]}
+        uploading={false}
+        error={null}
+        onUpload={onUpload}
+        onRemove={onRemove}
+        onRefresh={vi.fn().mockResolvedValue(undefined)}
+        onClearError={vi.fn()}
+        {...over}
+      />
+    </I18nProvider>,
   );
   return { onUpload, onRemove };
 }

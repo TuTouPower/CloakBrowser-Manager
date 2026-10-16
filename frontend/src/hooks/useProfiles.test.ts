@@ -1,6 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { useProfiles } from "./useProfiles";
+import { createElement, type ReactNode } from "react";
+import { I18nProvider } from "../i18n";
+
+const wrapper = ({ children }: { children: ReactNode }) =>
+  createElement(I18nProvider, null, children);
 
 // Mock the api module
 vi.mock("../lib/api", () => ({
@@ -71,13 +76,13 @@ afterEach(() => {
 
 describe("useProfiles", () => {
   it("starts with loading state", () => {
-    const { result } = renderHook(() => useProfiles());
+    const { result } = renderHook(() => useProfiles(), { wrapper });
     expect(result.current.loading).toBe(true);
     expect(result.current.profiles).toEqual([]);
   });
 
   it("fetches profiles on mount", async () => {
-    const { result } = renderHook(() => useProfiles());
+    const { result } = renderHook(() => useProfiles(), { wrapper });
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.profiles).toEqual([fakeProfile]);
     expect(mockApi.listProfiles).toHaveBeenCalled();
@@ -87,7 +92,7 @@ describe("useProfiles", () => {
     const newProfile = { ...fakeProfile, id: "new-1", name: "New" };
     mockApi.createProfile.mockResolvedValue(newProfile);
 
-    const { result } = renderHook(() => useProfiles());
+    const { result } = renderHook(() => useProfiles(), { wrapper });
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     await act(async () => {
@@ -101,7 +106,7 @@ describe("useProfiles", () => {
     const updated = { ...fakeProfile, name: "Renamed" };
     mockApi.updateProfile.mockResolvedValue(updated);
 
-    const { result } = renderHook(() => useProfiles());
+    const { result } = renderHook(() => useProfiles(), { wrapper });
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     await act(async () => {
@@ -114,7 +119,7 @@ describe("useProfiles", () => {
   it("remove filters from list", async () => {
     mockApi.deleteProfile.mockResolvedValue({ ok: true });
 
-    const { result } = renderHook(() => useProfiles());
+    const { result } = renderHook(() => useProfiles(), { wrapper });
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.profiles).toHaveLength(1);
 
@@ -130,7 +135,7 @@ describe("useProfiles", () => {
     mockApi.listProfiles.mockResolvedValue([fakeProfile, p2]);
     mockApi.reorderProfiles.mockResolvedValue({ ok: true });
 
-    const { result } = renderHook(() => useProfiles());
+    const { result } = renderHook(() => useProfiles(), { wrapper });
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.profiles.map((p) => p.id)).toEqual(["abc-123", "xyz-789"]);
 
@@ -148,7 +153,7 @@ describe("useProfiles", () => {
     mockApi.listProfiles.mockResolvedValue([fakeProfile, p2]);
     mockApi.reorderProfiles.mockRejectedValue(new Error("boom"));
 
-    const { result } = renderHook(() => useProfiles());
+    const { result } = renderHook(() => useProfiles(), { wrapper });
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     await act(async () => {
@@ -165,7 +170,7 @@ describe("useProfiles", () => {
     mockApi.listProfiles.mockResolvedValue([fakeProfile]);
     const clone = { ...fakeProfile, id: "clone-1", name: "Test (copy)" };
     mockApi.duplicateProfile.mockResolvedValue(clone);
-    const { result } = renderHook(() => useProfiles());
+    const { result } = renderHook(() => useProfiles(), { wrapper });
     await waitFor(() => expect(result.current.loading).toBe(false));
 
     let returned: unknown;
@@ -181,7 +186,7 @@ describe("useProfiles", () => {
   it("sets error on fetch failure", async () => {
     mockApi.listProfiles.mockRejectedValue(new Error("Network error"));
 
-    const { result } = renderHook(() => useProfiles());
+    const { result } = renderHook(() => useProfiles(), { wrapper });
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.error).toBe("Network error");
   });

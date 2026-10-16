@@ -2,6 +2,7 @@ import { Download, FileDown, FileUp, Loader2, Trash2, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "../lib/api";
 import type { ProfileFile } from "../lib/api";
+import { useI18n } from "../i18n";
 
 export function formatSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -42,6 +43,7 @@ export interface Transfer {
 
 /** Files attached to one profile, shared by the toolbar panel and the drop target. */
 export function useProfileFiles(profileId: string) {
+  const { t } = useI18n();
   const [files, setFiles] = useState<ProfileFile[]>([]);
   const [transfers, setTransfers] = useState<Transfer[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -60,11 +62,11 @@ export function useProfileFiles(profileId: string) {
       // publish a genuinely different list.
       setFiles((prev) => (sameFiles(prev, next) ? prev : next));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to list files");
+      setError(err instanceof Error ? err.message : t("failedToListFiles"));
     } finally {
       listing.current = false;
     }
-  }, [profileId]);
+  }, [profileId, t]);
 
   const uploadFiles = useCallback(
     async (chosen: File[]) => {
@@ -80,7 +82,7 @@ export function useProfileFiles(profileId: string) {
           setFiles((prev) => [added, ...prev.filter((f) => f.id !== added.id)]);
           setTransfers((prev) => prev.map((t) => (t.id === id ? { ...t, state: "done" } : t)));
         } catch (err) {
-          const message = err instanceof Error ? err.message : "Upload failed";
+          const message = err instanceof Error ? err.message : t("uploadFailed");
           setTransfers((prev) =>
             prev.map((t) => (t.id === id ? { ...t, state: "failed", error: message } : t)),
           );
@@ -91,7 +93,7 @@ export function useProfileFiles(profileId: string) {
         }
       }
     },
-    [profileId],
+    [profileId, t],
   );
 
   const dismissTransfer = useCallback(
@@ -129,12 +131,12 @@ export function useProfileFiles(profileId: string) {
         await api.deleteProfileFile(profileId, fileId);
         setFiles((prev) => prev.filter((f) => f.id !== fileId));
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Delete failed");
+        setError(err instanceof Error ? err.message : t("deleteFailed"));
       } finally {
         mutations.current += 1;
       }
     },
-    [profileId],
+    [profileId, t],
   );
 
   useEffect(() => {
@@ -171,6 +173,7 @@ export function ProfileFilesButton({
   onRefresh,
   onClearError,
 }: ProfileFilesButtonProps) {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -224,8 +227,8 @@ export function ProfileFilesButton({
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="dialog"
         aria-expanded={open}
-        aria-label={`Profile files, ${files.length} ${files.length === 1 ? "file" : "files"}`}
-        title="Files available to this profile"
+        aria-label={t("profileFilesAria", { count: files.length, filesWord: files.length === 1 ? t("fileSingular") : t("filePlural") })}
+        title={t("profileFilesTitle")}
         className={`relative rounded p-1 focus:outline-none focus:ring-2 focus:ring-accent/50 ${
           open || files.length ? "text-accent" : "text-gray-500 hover:text-gray-300"
         }`}
@@ -248,11 +251,11 @@ export function ProfileFilesButton({
       {open && (
         <div
           role="dialog"
-          aria-label="Profile files"
+          aria-label={t("profileFiles")}
           className="absolute right-0 top-full z-20 mt-1 w-80 rounded-md border border-border bg-surface-2 shadow-lg"
         >
           <div className="flex items-center justify-between border-b border-border px-3 py-2">
-            <span className="text-xs font-medium text-gray-200">Files for this profile</span>
+            <span className="text-xs font-medium text-gray-200">{t("filesForProfile")}</span>
             <button
               type="button"
               onClick={() => {
@@ -260,7 +263,7 @@ export function ProfileFilesButton({
                 triggerRef.current?.focus();
               }}
               className="rounded p-1 text-gray-500 hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-accent/50"
-              aria-label="Close"
+              aria-label={t("close")}
             >
               <X className="h-3.5 w-3.5" />
             </button>
@@ -273,7 +276,7 @@ export function ProfileFilesButton({
                 type="button"
                 onClick={onClearError}
                 className="rounded p-1 text-red-400 focus:outline-none focus:ring-2 focus:ring-accent/50"
-                aria-label="Dismiss error"
+                aria-label={t("dismissError")}
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -283,15 +286,15 @@ export function ProfileFilesButton({
           <div className="max-h-64 overflow-y-auto">
             {files.length === 0 ? (
               <p className="px-3 py-4 text-xs text-gray-500">
-                No files yet. Upload one, drop it onto the screen, or download one in the browser.
+                {t("noFilesYet")}
               </p>
             ) : (
               files.map((file) => (
                 <div key={file.id} className="flex items-center gap-2 px-3 py-2 hover:bg-surface-3">
                   {file.kind === "download" ? (
-                    <FileDown className="h-3.5 w-3.5 shrink-0 text-gray-500" aria-label="Downloaded by the browser" />
+                    <FileDown className="h-3.5 w-3.5 shrink-0 text-gray-500" aria-label={t("downloadedByBrowser")} />
                   ) : (
-                    <FileUp className="h-3.5 w-3.5 shrink-0 text-gray-500" aria-label="Uploaded" />
+                    <FileUp className="h-3.5 w-3.5 shrink-0 text-gray-500" aria-label={t("uploaded")} />
                   )}
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-xs text-gray-200" title={file.name}>
@@ -299,9 +302,9 @@ export function ProfileFilesButton({
                     </div>
                     <div className="text-[11px] text-gray-500">
                       {file.state === "pending" ? (
-                        <span className="text-accent">Downloading...</span>
+                        <span className="text-accent">{t("downloading")}</span>
                       ) : file.state === "failed" ? (
-                        <span className="text-red-400">Download failed</span>
+                        <span className="text-red-400">{t("downloadFailed")}</span>
                       ) : (
                         formatSize(file.size)
                       )}
@@ -311,7 +314,7 @@ export function ProfileFilesButton({
                     <a
                       href={api.profileFileUrl(profileId, file.id)}
                       className="rounded p-1 text-gray-500 hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-accent/50"
-                      title="Download to this computer"
+                      title={t("downloadToComputer")}
                     >
                       <Download className="h-3.5 w-3.5" />
                     </a>
@@ -320,8 +323,8 @@ export function ProfileFilesButton({
                     type="button"
                     onClick={() => onRemove(file.id)}
                     className="rounded p-1 text-gray-500 hover:text-red-400 focus:outline-none focus:ring-2 focus:ring-accent/50"
-                    title="Remove from the profile"
-                    aria-label={`Remove ${file.name}`}
+                    title={t("removeFromProfile")}
+                    aria-label={t("removeFileAria", { name: file.name })}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
@@ -338,11 +341,10 @@ export function ProfileFilesButton({
               className="btn-secondary flex w-full items-center justify-center gap-1.5"
             >
               <FileUp className="h-3.5 w-3.5" />
-              <span>{uploading ? "Uploading..." : "Upload a file"}</span>
+              <span>{uploading ? t("uploading") : t("uploadAFile")}</span>
             </button>
             <p className="mt-2 text-[11px] leading-snug text-gray-500">
-              In the page's file dialog, pick{" "}
-              <span className="text-gray-400">Uploads — {profileName}</span> in the sidebar.
+              {t("uploadsSidebarHint", { name: profileName })}
             </p>
           </div>
         </div>

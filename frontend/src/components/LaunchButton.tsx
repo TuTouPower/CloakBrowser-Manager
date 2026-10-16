@@ -1,5 +1,6 @@
 import { Play, Square, Loader2 } from "lucide-react";
 import { useState } from "react";
+import { useI18n } from "../i18n";
 
 interface LaunchButtonProps {
   status: "running" | "stopped" | "initializing";
@@ -8,6 +9,7 @@ interface LaunchButtonProps {
 }
 
 export function LaunchButton({ status, onLaunch, onStop }: LaunchButtonProps) {
+  const { t } = useI18n();
   const [loading, setLoading] = useState(false);
 
   const handleClick = async () => {
@@ -19,8 +21,6 @@ export function LaunchButton({ status, onLaunch, onStop }: LaunchButtonProps) {
         await onLaunch();
       }
     } catch (err) {
-      // Launch/license errors are surfaced by the top LaunchErrorBanner (set in
-      // App.handleLaunch); nothing to render here.
       console.error("Action failed:", err);
     } finally {
       setLoading(false);
@@ -30,10 +30,10 @@ export function LaunchButton({ status, onLaunch, onStop }: LaunchButtonProps) {
   if (loading || status === "initializing") {
     const label =
       status === "initializing"
-        ? "First-time setup..."
+        ? t("firstTimeSetup")
         : status === "running"
-          ? "Stopping..."
-          : "Launching...";
+          ? t("stopping")
+          : t("launching");
     return (
       <button disabled className="btn-secondary opacity-60 cursor-not-allowed flex items-center gap-1.5">
         <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -46,7 +46,7 @@ export function LaunchButton({ status, onLaunch, onStop }: LaunchButtonProps) {
     return (
       <button onClick={handleClick} className="btn-danger flex items-center gap-1.5">
         <Square className="h-3.5 w-3.5" />
-        <span>Stop</span>
+        <span>{t("stop")}</span>
       </button>
     );
   }
@@ -54,7 +54,7 @@ export function LaunchButton({ status, onLaunch, onStop }: LaunchButtonProps) {
   return (
     <button onClick={handleClick} className="btn-primary flex items-center gap-1.5">
       <Play className="h-3.5 w-3.5" />
-      <span>Launch</span>
+      <span>{t("launch")}</span>
     </button>
   );
 }

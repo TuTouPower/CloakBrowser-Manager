@@ -1,18 +1,16 @@
 import { useEffect, useState } from "react";
 import { Loader2, X } from "lucide-react";
 import { api, type ManagerSettings, type SystemStatus } from "../lib/api";
+import { useI18n } from "../i18n";
+import { LanguageToggle } from "./LanguageToggle";
 
 interface SettingsPanelProps {
   onClose: () => void;
   onSaved: (status: SystemStatus) => void;
 }
 
-/**
- * In-app settings — replaces hand-editing a .env for the native app.
- * v1 exposes the license key + release channel; the field list is kept flat so
- * future settings drop in as new rows.
- */
 export function SettingsPanel({ onClose, onSaved }: SettingsPanelProps) {
+  const { t } = useI18n();
   const [current, setCurrent] = useState<ManagerSettings | null>(null);
   const [licenseKey, setLicenseKey] = useState("");
   const [channel, setChannel] = useState<"stable" | "preview">("stable");
@@ -27,16 +25,14 @@ export function SettingsPanel({ onClose, onSaved }: SettingsPanelProps) {
         setChannel(s.release_channel === "preview" ? "preview" : "stable");
       })
       .catch((err) =>
-        setError(err instanceof Error ? err.message : "Failed to load settings"),
+        setError(err instanceof Error ? err.message : t("failedToLoadSettings")),
       );
-  }, []);
+  }, [t]);
 
   const handleSave = async () => {
     setSaving(true);
     setError(null);
     try {
-      // Send license_key only when the user typed something (empty input =
-      // leave the existing key untouched, not clear it).
       const payload: { license_key?: string; release_channel: string } = {
         release_channel: channel,
       };
@@ -45,7 +41,7 @@ export function SettingsPanel({ onClose, onSaved }: SettingsPanelProps) {
       onSaved(status);
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save settings");
+      setError(err instanceof Error ? err.message : t("failedToSaveSettings"));
     } finally {
       setSaving(false);
     }
@@ -59,7 +55,7 @@ export function SettingsPanel({ onClose, onSaved }: SettingsPanelProps) {
       onSaved(status);
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to clear key");
+      setError(err instanceof Error ? err.message : t("failedToClearKey"));
     } finally {
       setSaving(false);
     }
@@ -75,11 +71,11 @@ export function SettingsPanel({ onClose, onSaved }: SettingsPanelProps) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
-          <h2 className="text-sm font-semibold">Settings</h2>
+          <h2 className="text-sm font-semibold">{t("settings")}</h2>
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-300"
-            title="Close"
+            title={t("close")}
           >
             <X className="h-4 w-4" />
           </button>
@@ -87,7 +83,17 @@ export function SettingsPanel({ onClose, onSaved }: SettingsPanelProps) {
 
         <div className="space-y-4 p-4">
           <div>
-            <label className="label">CloakBrowser license key</label>
+            <label className="label">{t("language")}</label>
+            <div className="flex items-center gap-2">
+              <LanguageToggle />
+              <span className="text-xs text-gray-500">
+                {t("languageEn")} / {t("languageZh")}
+              </span>
+            </div>
+          </div>
+
+          <div>
+            <label className="label">{t("licenseKey")}</label>
             <input
               className="input font-mono"
               type="password"
@@ -97,26 +103,28 @@ export function SettingsPanel({ onClose, onSaved }: SettingsPanelProps) {
               onChange={(e) => setLicenseKey(e.target.value)}
               placeholder={
                 current?.license_key_set
-                  ? `Current: ${current.license_key_masked ?? "set"} — type to replace`
-                  : "cb_… (leave empty to run the free keyless build)"
+                  ? t("licenseKeyPlaceholderSet", {
+                      masked: current.license_key_masked ?? "set",
+                    })
+                  : t("licenseKeyPlaceholderEmpty")
               }
             />
             <p className="mt-1 text-xs text-gray-500">
-              One key per Manager instance — every profile shares its seat pool.{" "}
+              {t("licenseKeyHelp")}{" "}
               <a
                 href="https://cloakbrowser.dev/free"
                 target="_blank"
                 rel="noreferrer"
                 className="text-accent hover:underline"
               >
-                Get a free key
+                {t("getFreeKey")}
               </a>
               .
             </p>
           </div>
 
           <div>
-            <label className="label">Release channel</label>
+            <label className="label">{t("releaseChannel")}</label>
             <select
               className="input"
               value={channel}
@@ -124,8 +132,8 @@ export function SettingsPanel({ onClose, onSaved }: SettingsPanelProps) {
                 setChannel(e.target.value === "preview" ? "preview" : "stable")
               }
             >
-              <option value="stable">Stable</option>
-              <option value="preview">Preview (early access)</option>
+              <option value="stable">{t("channelStable")}</option>
+              <option value="preview">{t("channelPreview")}</option>
             </select>
           </div>
 
@@ -139,14 +147,14 @@ export function SettingsPanel({ onClose, onSaved }: SettingsPanelProps) {
               disabled={saving}
               className="text-xs text-gray-500 hover:text-red-400 disabled:opacity-50"
             >
-              Remove key
+              {t("removeKey")}
             </button>
           ) : (
             <span />
           )}
           <div className="flex items-center gap-2">
             <button onClick={onClose} disabled={saving} className="btn-secondary">
-              Cancel
+              {t("cancel")}
             </button>
             <button
               onClick={handleSave}
@@ -154,7 +162,7 @@ export function SettingsPanel({ onClose, onSaved }: SettingsPanelProps) {
               className="btn-primary flex items-center gap-1.5"
             >
               {saving && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-              <span>{saving ? "Applying…" : "Save"}</span>
+              <span>{saving ? t("applying") : t("save")}</span>
             </button>
           </div>
         </div>

@@ -3,6 +3,7 @@ import { AlertCircle, CheckCircle2, ClipboardCopy, Loader2, Maximize2, Minimize2
 import { api } from "../lib/api";
 import { CdpEndpointButton } from "./CdpEndpointButton";
 import { ProfileFilesButton, useProfileFiles } from "./ProfileFiles";
+import { useI18n } from "../i18n";
 
 interface ProfileViewerProps {
   profileId: string;
@@ -24,6 +25,7 @@ export function ProfileViewer({
   onClipboardSyncChange,
   onDisconnect,
 }: ProfileViewerProps) {
+  const { t } = useI18n();
   const containerRef = useRef<HTMLDivElement>(null);
   // The canvas plus the drop overlay and transfer feedback; fullscreening the bare canvas
   // would hide every sign that a file is being uploaded.
@@ -107,7 +109,7 @@ export function ProfileViewer({
         });
       } catch (err) {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : "Failed to connect");
+          setError(err instanceof Error ? err.message : t("failedToConnect"));
         }
       }
     }
@@ -291,7 +293,7 @@ export function ProfileViewer({
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center">
-          <p className="text-red-400 text-sm mb-2">Connection failed</p>
+          <p className="text-red-400 text-sm mb-2">{t("connectionFailed")}</p>
           <p className="text-gray-500 text-xs">{error}</p>
         </div>
       </div>
@@ -305,7 +307,7 @@ export function ProfileViewer({
         <div className="flex items-center gap-2">
           <span className={`h-2 w-2 rounded-full ${connected ? "bg-emerald-400" : "bg-yellow-400 animate-pulse"}`} />
           <span className="text-xs text-gray-400">
-            {connected ? "Connected" : "Connecting..."}
+            {connected ? t("connected") : t("connecting")}
           </span>
         </div>
         <div className="flex items-center gap-1">
@@ -324,14 +326,14 @@ export function ProfileViewer({
           <button
             onClick={toggleClipboardSync}
             className={`p-1 ${clipboardSync ? "text-accent" : "text-gray-500 hover:text-gray-300"}`}
-            title={clipboardSync ? "Disable clipboard sync" : "Enable clipboard sync"}
+            title={clipboardSync ? t("disableClipboardSync") : t("enableClipboardSync")}
           >
             <ClipboardCopy className="h-3.5 w-3.5" />
           </button>
           <button
             onClick={toggleFullscreen}
             className="text-gray-500 hover:text-gray-300 p-1"
-            title={fullscreen ? "Exit fullscreen" : "Fullscreen"}
+            title={fullscreen ? t("exitFullscreen") : t("fullscreen")}
           >
             {fullscreen ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
           </button>
@@ -372,9 +374,9 @@ export function ProfileViewer({
                   </div>
                   <div className="text-xs text-gray-400">
                     {transfer.state === "uploading"
-                      ? "Uploading to this profile..."
+                      ? t("uploadingToProfile")
                       : transfer.state === "done"
-                        ? `In profile files — pick it from Uploads — ${profileName} in the page's file dialog`
+                        ? t("inProfileFilesHint", { name: profileName })
                         : transfer.error}
                   </div>
                   {transfer.state === "failed" && (
@@ -383,7 +385,7 @@ export function ProfileViewer({
                       onClick={() => void files.retryTransfer(transfer.id)}
                       className="mt-1 text-xs text-accent hover:underline"
                     >
-                      Retry
+                      {t("retry")}
                     </button>
                   )}
                 </div>
@@ -405,9 +407,9 @@ export function ProfileViewer({
         {dragging && (
           <div className="pointer-events-none absolute inset-0 z-10 m-2 flex items-center justify-center rounded-md border-2 border-dashed border-accent bg-black/70">
             <div className="text-center">
-              <p className="text-sm font-medium text-gray-100">Drop to upload to this profile</p>
+              <p className="text-sm font-medium text-gray-100">{t("dropToUpload")}</p>
               <p className="mt-1 text-xs text-gray-400">
-                Then pick it from Uploads — {profileName} in the page's file dialog
+                {t("dropToUploadHint", { name: profileName })}
               </p>
             </div>
           </div>
