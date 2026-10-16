@@ -9,8 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **Community fork: English / 中文 UI language switch.** Top-bar EN/中文 toggle and a Language setting; preference is stored locally. Default follows the browser locale (`zh*` → Chinese, otherwise English). Based on upstream CloakBrowser Manager 0.1.8.
 
-### Changed
-- **Release workflow (fork):** GitHub Release with Windows and macOS installers no longer requires Docker Hub. Docker image jobs run only when `DOCKERHUB_TOKEN` is configured.
+### Notes
+- Windows and macOS installers are published on this GitHub Release. Docker Hub image publish is skipped on this fork (no Docker Hub credentials). A workflow patch to skip Docker automatically is prepared but requires the GitHub `workflow` OAuth scope to push `.github/workflows/release.yml`.
 
 ## [0.1.8] - 2026-10-14
 
