@@ -4,6 +4,14 @@ All notable changes to CloakBrowser Manager are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.9] - 2026-10-16
+
+### Added
+- **Community fork: English / 中文 UI language switch.** Top-bar EN/中文 toggle and a Language setting; preference is stored locally. Default follows the browser locale (`zh*` → Chinese, otherwise English). Based on upstream CloakBrowser Manager 0.1.8.
+
+### Changed
+- **Release workflow (fork):** GitHub Release with Windows and macOS installers no longer requires Docker Hub. Docker image jobs run only when `DOCKERHUB_TOKEN` is configured.
+
 ## [0.1.8] - 2026-10-14
 
 ### Added
